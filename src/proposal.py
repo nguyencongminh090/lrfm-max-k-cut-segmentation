@@ -228,11 +228,9 @@ def build():
          "Cleaned dataset, retail.db, EDA report", "Research team"),
         ("3", "Week 3", "Feature engineering: LRFM scoring and justification",
          "customer_rfml table, LRFM justification", "Research team"),
-        ("4", "Week 4", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
-         "Validated solver, test suite", "Research team"),
-        ("5", "Week 4", "Modelling: RFM vs LRFM; multi-method comparison",
-         "Silhouette results, loyalty segments", "Research team"),
-        ("6", "Week 5", "SQL analytics, visualisation, report, proposal & audit log",
+        ("4", "Week 4", "License-free solver implementation & validation; modelling (RFM vs LRFM) & multi-method comparison",
+         "Validated solver, test suite, and comparison/silhouette results", "Research team"),
+        ("5", "Week 5", "SQL analytics, visualisation, report, proposal & audit log",
          "Figures, dashboards, final report", "Research team"),
     ]
     pt = doc.add_table(rows=1, cols=5); pt.style = "Table Grid"
