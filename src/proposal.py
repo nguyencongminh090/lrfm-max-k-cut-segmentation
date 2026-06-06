@@ -224,15 +224,15 @@ def build():
     plan = [
         ("1", "Week 1", "Literature review; baseline reproduction setup; data download",
          "Scope, reproduced RFM baseline", "Research team"),
-        ("2", "Week 1-2", "Data cleaning, EDA, and 3NF SQLite database",
+        ("2", "Week 2", "Data cleaning, EDA, and 3NF SQLite database",
          "Cleaned dataset, retail.db, EDA report", "Research team"),
-        ("3", "Week 2", "Feature engineering: LRFM scoring and justification",
+        ("3", "Week 3", "Feature engineering: LRFM scoring and justification",
          "customer_rfml table, LRFM justification", "Research team"),
-        ("4", "Week 2-3", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
+        ("4", "Week 3-4", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
          "Validated solver, test suite", "Research team"),
-        ("5", "Week 3", "Modelling: RFM vs LRFM; multi-method comparison",
+        ("5", "Week 4", "Modelling: RFM vs LRFM; multi-method comparison",
          "Silhouette results, loyalty segments", "Research team"),
-        ("6", "Week 3-4", "SQL analytics, visualisation, report, proposal & audit log",
+        ("6", "Week 5", "SQL analytics, visualisation, report, proposal & audit log",
          "Figures, dashboards, final report", "Research team"),
     ]
     pt = doc.add_table(rows=1, cols=5); pt.style = "Table Grid"
