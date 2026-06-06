@@ -1,0 +1,1679 @@
+Quality & Quantity
+https://doi.org/10.1007/s11135-026-02784-0
+
+RFM model customer segmentation from a graph theory
+perspective
+André Luiz Corrêa Vianna Filho1 · Leonardo de Lima1,2 · Mariana Kleina1,3
+Received: 26 November 2025 / Accepted: 14 April 2026
+© The Author(s) 2026
+
+Abstract
+Developing new marketing methods to understand customers’ needs is of vital importance
+in a highly competitive market. The customer segmentation aims to divide the customers into disjoint groups of self-similar individuals to apply specific marketing strategies
+to each group. Assigning each customer to the most appropriate group is a challenging
+task in large datasets. In this paper, we propose a graph-based approach to the customer
+segmentation problem by representing each customer as a vertex and two vertices are
+connected by a weighted edge according to the recency, frequency and monetary values
+associated with each customer. The main advantage of this graph representation is that
+we design a procedure to build a reduced graph with fewer vertices and edges, such that
+clustering this smaller graph is equivalent to clustering the customer dataset in the original
+graph. It clearly provides an advantage in dealing with large instances, and we demonstrate this equivalence by proving two theorems. We applied our methodology to synthetic
+datasets randomly generated and to a real-world dataset available in the UCI Machine
+Learning repository. In all cases, we compared the results of our method to the results
+of clustering algorithms of the literature in terms of the silhouette index. In particular,
+we considered the results for the real-world dataset reported in Rungruang et al., Expert
+Systems With Applications 237 (2024) 121449. The computational results show that our
+method outperformed the other methods in the majority of the instances.
+Keywords Customer segmentation · RFM analysis · Graph-based clustering · Maximum
+k-cut problem
+
+Mariana Kleina
+marianakleina@ufpr.br
+André Luiz Corrêa Vianna Filho
+viannafilhoandre@gmail.com
+Leonardo de Lima
+leonardo.delima@ufpr.br
+1
+
+Graduate Program in Production Engineering, Federal University of Paraná, Curitiba, Brazil
+
+2
+
+Department of Business Administration, Federal University of Paraná, Curitiba, Brazil
+
+3
+
+Department of Production Engineering, Federal University of Paraná, Curitiba, Brazil
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+1 Introduction
+In a highly competitive market, developing new marketing techniques is necessary to
+understand customers’ needs. Before applying marketing techniques to their customers, the
+challenge is to clearly differentiate customers’ behaviours in a massive dataset and provide
+an adequate strategy to each group of self-similar individuals. In this scenario, grouping
+customers that share similar characteristics, such as purchasing patterns, is an important
+step. The Customer Segmentation Problem (CSP) consists of partitioning the dataset of an
+organization’s customers into groups so that customers of the same group share common
+characteristics. Many studies have shown that customer segmentation enables businesses to
+enhance customer loyalty and retention, and helps identify the value of each customer, see
+for instance the recent papers of Pai et al. (2025) and Rungruang et al. (2024), and the references therein. A widely used strategy to solve the CSP is to represent each customer by its
+purchases in terms of recency, frequency, and monetary (the so called RFM representation)
+and apply a clustering method from that representation, that is, combining RFM analysis
+with a clustering method is one of the most used techniques to groups customers into groups,
+as demonstrated in the following papers (Cheng and Chen 2009; Chen et al. 2012; Christy
+et al. 2021; Doğan et al. 2018; Rungruang et al. 2024). The K-means technique is among
+the most widely used procedure for clustering due to its ease of application and its ability to
+explore large and complex solution spaces efficiently, especially for NP-hard combinatorial
+optimization problems where finding the absolute optimal solution is computationally prohibitive for large instances. The solution provided by the K-means method is known to be a
+high-quality suboptimal solution, that is, there is no guarantee that the obtained grouping is
+the best possible. In this sense, exact methods for segmenting customers are desirable, but
+they are very difficult to apply in an environment with a large number of customers due to
+the high computational time required for their response.
+To address the CSP, this paper proposes the use of an exact clustering mathematical
+model, known as the maximum k-cut problem in the optimization literature, for clustering
+customers by means of the combination of the RFM model and a graph theory perspective.
+To the best of our knowledge, the use of graph theory to address the customer segmentation problem when it is modeled based on the RFM score represents a novel approach
+in the literature. Graph-based modeling opens new perspectives for analyzing customer
+behavior through the application of network analysis metrics, such as centrality, community
+detection and spectral methods, which may be useful for generating rankings and identifying the most relevant customers within the database. Besides, the proposed methodology offers significant computational advantages, as it enables a substantial reduction in the
+problem’s dimensionality, regardless of the total number of customers present in the dataset.
+This dimensionality reduction allows the adoption of an exact optimization technique on a
+smaller, more tractable instance. Furthermore, from the optimal solution of this auxiliary
+problem, we demonstrate that it is possible to reconstruct the solution space of the original
+formulation and recover the globally optimal solution to the original problem. The proposed
+framework thus contributes to enhancing computational efficiency while maintaining solution optimality in large-scale customer segmentation scenarios.
+The main contribution of this article is related to the graph-based approach and how it
+provides a method for obtaining optimal solutions for clustering customers when a large
+number of customers need to be grouped in the CSP. The graph-theoretic perspective plays
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+a crucial role in the proposed method, as we mathematically prove that large instances can
+be drastically reduced using graph-theoretic properties. We applied our procedure in two
+distinct scenarios: (i) to synthetic datasets randomly generated by a discrete uniform distribution with three different number of customers, and (ii) to a well-known dataset from
+the UCI Machine Learning Repository. Our approach was compared to other clustering
+methods in the literature, including K-means, Gaussian Mixture Models, and a hierarchical
+approach based on Formal Concept Analysis (FCA) (Rungruang et al. 2024). The comparisons were conducted by applying the silhouette index as the evaluation metric. The computational results indicate that the proposed method outperforms the competing approaches in
+the majority of the tested instances, highlighting its strong potential for application to large
+real-world datasets while maintaining high-quality cluster structures.
+The paper is organized as follows. In Sect. 2, we present the theoretical background
+of the paper by describing the graph theory perspective of the CSP by means of the RFM
+model and the classical combinatorial optimization problem known as the maximum k-cut
+problem. In Sect. 3, we show how to reduce the original graph to an equivalent smaller one
+and how we use it to solve the maximum k-cut problem. We also state and prove theoretical
+results that form the basis of our method. A summary of our methodology is also presented.
+In Sect. 4, the computational results for the synthetic datasets and the real-world dataset
+are presented, along with discussions on the practical implications associated with the realworld dataset. Finally, Sect. 5 presents our conclusions and perspective on future works.
+
+2 Background
+We explore here the main concepts behind our methodology to obtain a customer
+segmentation.
+
+2.1 RFM model
+To segment customers into clusters, we need to identify characteristics that allow us to
+distinguish them. To this end, we use the customer value analysis method known as RFM
+analysis (Cheng and Chen 2009; Hughes 1994). Although there is a wealth of information
+about customers that companies can collect, the advantage of the RFM analysis, according
+to Cheng and Chen (2009), is that it identifies the characteristics of customers and differentiates them using only three variables, described in the sequel (Cheng and Chen 2009; Christy
+et al. 2021):
+1. Recency (Ri ): the time interval between the latest consuming behavior of customer i
+and the present. The shorter this interval is, the bigger the value of Ri .
+2. Frequency (Fi ): the number of customer i purchases in a fixed period. The higher this
+number is, the higher the value of Fi .
+3. Monetary (Mi ): the total amount of money spent by customer i over the whole time
+period considered. The higher this value is, the higher the value of Mi .
+Each variable is ordered in ascending order and divided into T equal groups. Then, for each
+customer i, we assign an integer value ranging from 1 to T for each variable Ri , Fi and Mi .
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+So, each customer i is associated with a three-dimensional score (Ri , Fi , Mi ) that we refer
+to as (R, F, M)-score of customer i. Note that there are at most T 3 distinct (R, F, M)-scores.
+
+2.2 The maximum k-cut problem
+Based on the (R, F, M)-scores of each customer, we show how customers are compared to
+each other and divided into groups using a graph approach. First, we need to introduce the
+max-k-cut problem.
+Consider a simple weighted graph denoted by G = (V, E), where V = {1, 2, . . . , n} is
+the set of vertices and E is the set of edges eij connecting vertices i, j ∈ V , with |E| = m.
+Each edge eij ∈ E has a non-negative weight wij . Given the parameter k ≥ 2, the maxk-cut problem consists of partitioning the set of vertices V into k disjoint subsets, say
+V1 , V2 , . . . , Vk , so that the sum of the weights of the edges connecting vertices belonging
+to different subsets of the partition is the largest possible. It is an NP-hard combinatorial
+optimization problem (van Dam and Sotirov 2016).
+Variations of this problem can be obtained by imposing constraints on each part Vi , for
+i ∈ {1, 2, . . . , k}. For instance: (i) if each Vi induces a connected subgraph, then we have
+the connected max-k-cut problem (Healey et al. 2024; Hojny et al. 2021; ii) if |Vi | is at most
+a given integer number, then we are dealing with the capacitated max-k-cut problem (Gaur
+et al. 2008). Also, a wide variety of practical applications can be tackled via the max-k-cut
+problem and its variations, such as in the electricity market (Ambrosius et al. 2020; Hojny
+et al. 2021), forest planning (Carvajal et al. 2013), scheduling (Carlson and Nemhauser
+1966), and clustering (Poland; T. Zeugmann 2006). Concerning the strategies to solve the
+max-k-cut problem, we refer the reader to the recent papers (Fakhimi et al. 2023; Healey
+et al. 2024; Hojny et al. 2021) for approaches based on mathematical formulations and
+relaxations. Heuristic methods have also been proposed to provide good solutions to the
+max-k-cut problem (Gaur et al. 2008; Ma and Hao 2017; Zhu et al. 2013).
+We consider the following mathematical formulation of the max-k-cut problem in terms
+of a binary quadratic optimization (BQO) problem. The decision variables xil represent
+whether a vertex i belongs to or not to Vl , that is, xil = 1 if vertex i ∈ Vl and xil = 0 otherwise. The mathematical formulation (BQO) is
+max
+s.t.
+
+f (x) =
+k
+∑
+
+∑
+
+eij ∈E
+
+wij
+
+(
+
+1−
+
+k
+∑
+l=1
+
+xil xjl
+
+)
+
+xil = 1, i = 1, 2, . . . , n
+
+
+
+(BQO)
+
+l=1
+
+xil ∈ {0, 1}, for i = 1, 2, . . . , n and l = 1, 2, . . . , k.
+
+The maximized objective function considers only the weights related to the edges that
+connect vertices belonging to different subsets of the partition. The first set of constraints
+imposes that each vertex of the graph should be assigned to exactly one group, while the
+second set imposes that every xil is a binary variable.
+The input for the mathematical model (BQO) is a weighted graph G represented by its
+adjacency matrix given by W = (wij )n×n . The graph G is built as follows: each vertex i
+of the graph represents a customer, which has a three-dimensional score (Ri , Fi , Mi ); two
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+vertices i and j are connected by an edge of weight wij ≥ 0 given by the Manhattan distance
+between the respective scores (Ri , Fi , Mi ) and (Rj , Fj , Mj ), that is,
+wij = |Ri − Rj | + |Fi − Fj | + |Mi − Mj |.
+
+Customers i and j with the same (R, F, M)-scores have wij = 0, which means that there is
+no edge connecting the corresponding vertices i and j. It is worth mentioning that in huge
+datasets, skipping the square root calculation in the Euclidean formula can make distance
+calculations faster, improving performance, and that is the main reason why we chose the
+Manhattan distance.
+
+3 Research methodology
+The underlying rationale of our methodology is that customers sharing identical (R, F, M)scores can be consolidated into a single vertex, with the corresponding adjustments applied
+to the incident edges so as to preserve the structural properties of the graph. Procedure 1
+details how this reduction is performed on the dataset without loss of relevant information,
+while Theorems 1 and 2 establish that any solution obtained from the reduced dataset can be
+consistently mapped back to the original problem without compromising optimality. Section 3.1 describes how a dataset represented as a graph can be substantially reduced to a
+smaller graph with fewer vertices and edges through the application of Procedure 1. Section
+3.2 introduces Procedure 2, which demonstrates that the customer segmentation solution
+derived from the reduced graph can be consistently transferred to the original graph. In
+particular, a solution to the original dataset can be readily recovered by disaggregating the
+merged vertices. Finally, Theorems 1 and 2 prove that, when the maximum k-cut problem
+is employed to solve the reduced instance of the customer segmentation problem, the solutions corresponding to the reduced and original graphs are equivalent, thereby preserving
+optimality under the maximum k-cut formulation.
+
+3.1 Reduction technique for large instances
+The number of vertices of G is equal to the number of customers, and since a dataset can
+contain thousands of customers, finding the optimal solution to the associated max-k-cut
+problem (with a high number of vertices and edges) using model (BQO) may be computationally infeasible. For this reason, we propose constructing another graph from G, denoted
+here by G′ , which has fewer vertices and edges than G. The construction of G′ is as follows.
+Procedure 1 (Reducing graph G)
+● Merging vertices: Let {i1 , i2 , . . . , ip } be the set of all vertices with a certain (R, F, M)score in G. Merge those vertices into one vertex i and add i to the vertex set of G′ ,
+denoted by V (G′ ). Apply this procedure to all sets of vertices with the same (R, F, M)scores in G. At the end, assume that G′ has n′ vertices (note that n′ ≤ n).
+● Updating weights: Let i ∈ V (G′ ) obtained as a merge of {i1 , i2 , . . . , ip }, and let
+j ∈ V (G′ ) obtained as a merge of {j1 , j2 , . . . , jq }. Then the edge weight connecting i
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+to a vertex j in G′ is given by
+′
+wij
+=
+
+q
+p
+∑
+∑
+
+wik jr .
+
+k=1 r=1
+
+Apply this procedure to all vertices of G′ .
+To illustrate this procedure, adopting T = 5, consider graph G in Fig. 1 with 6 vertices and
+13 edges. The vertices (1, 1, 1) have no edge between them because w(1,1,1),(1,1,1) = 0. The
+graph G′ is obtained by merging vertices with the same (R, F, M)-scores such as we do for
+the vertices (1, 1, 1) and (1, 3, 3) in the graph of Fig. 1. In the sequel, the weights of the corresponding incident edges are updated.
+Note that, independently of the number of customers in the dataset, we ensure that graph
+G′ has at most 125 vertices, since there exist at most 53 = 125 different (R, F, M)-scores.
+It is important to remark that, as we are going to prove, from a solution to the max-k-cut
+problem related to the graph G′ , we can obtain a solution to the problem related to G, but
+with the advantage that the mathematical model (BQO), when obtained from G′ , may have
+considerably fewer variables and constraints and should be easier to solve than the original
+problem related to G.
+
+3.2 Retrieving an optimal solution to the original problem
+Once we have reduced the graph G to the graph G′ employing Procedure 1, we solve prob′
+lem (BQO) with graph G′ as input, obtaining an optimal solution x∗ ∈ Rn ×k , where n′ is
+the number of vertices of G′ . Then, from x∗ , we can generate an optimal solution x∗ ∈ Rn×k
+to the problem (BQO) with the graph G as input through the following procedure.
+Procedure 2 For each vertex p in the graph G′ , if the vertex i of the graph G has been
+merged to the vertex p in G′ by Procedure 1, put x∗il = x∗pl , for every l ∈ {1, . . . , k}.
+
+Fig. 1 Example of a graph G′ in (ii) obtained from G in (i)
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+Additional comments about the relation between G and G′ for the CSP are worth mentioning. When G is given as input to the max-k-cut problem (BQO), we expect that vertices with
+equal (R, F, M)-scores are assigned to the same group (or cluster) in the optimal solution.
+Unfortunately, it is not generally possible to guarantee that an optimal solution to the maxk-cut for the graph G has this property. However, we prove that such a solution always exists
+and that our technique always leads to it, for which we give a more precise definition in the
+sequel to simplify the presentation of our arguments in Theorems 1 and 2.
+Definition 1 (Segmentation property) We say that a partition of the vertices of G has the
+segmentation property if the vertices having the same (R, F, M)-score lie in the same group.
+Definition 2 (Segmentation solution) A segmentation solution to problem (BQO) is a feasible solution that has the segmentation property.
+The existence of an optimal segmentation solution is proved in Theorem 1 by showing that,
+if you find an optimal solution violating this property, it is possible to make some local
+changes in this solution in such a way that we keep the optimal objective function value
+and rearrange vertices with equal (R, F, M)-scores to the same group, i.e., we obtain a new
+optimal solution that respects the fact that vertices with equal (R, F, M)-scores are always
+in the same group.
+Theorem 1 Consider graph G, built as described in Sect. 2.2, given as an input to (BQO).
+Then, there is at least one optimal segmentation solution for (BQO).
+Proof Suppose that x∗ is an optimal solution to (BQO). If x∗ is a segmentation solution,
+then the result is proven. Now, consider that x∗ is not a segmentation solution, that is, there
+are vertices with the same (R, F, M)-score but belonging to different partition sets.
+Let (R, F , M ) be an arbitrary score for which this happens, and let us fix a set Vp of the
+partition containing a vertex associated with the score (R, F , M ). We denote this vertex
+associated with the score (R, F , M ), that lies in the set Vp , by i. We will conclude that any
+other vertex associated with the score (R, F , M ) can be moved to the set Vp and we still
+have a global optimal solution. This way, we can find a global optimal solution in which all
+the vertices associated with the the score (R, F , M ) are grouped in the set Vp .
+Indeed, let j be any other arbitrary vertex associated with the score (R, F , M ) that lies in
+a set Vq of the partition, distinct from the set Vp . Let S be the sum of the weights of the edges
+connecting vertices that lie in different sets of the partition but are not related to i or j. Let
+Sp be the sum of the weights of the edges connecting the vertex i with vertices that lie in a
+set distinct from the set Vp of the partition and let Sq be the sum of the weights of the edges
+connecting the vertex j with vertices that lie in a set distinct from the set Vq of the partition.
+Then the value of the objective function in this optimal solution is S + Sp + Sq .
+Considering that i and j are not connected by an edge and share the same neighbors, if
+we move the vertex i from the set Vp to the set Vq , the value of the objective function in the
+resulting partition is S + Sq + Sq . Since S + Sp + Sq is the value of the objective function
+in a global optimal solution, we conclude that
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+S + Sq + Sq ≤ S + Sp + Sq ,
+
+which implies that Sq ≤ Sp . Analogously, we can move the vertex j from the set Vq to the set
+Vp . In this case, the value of the objective function in the resulting partition is S + Sp + Sp ,
+leading us to Sp ≤ Sq . Therefore, we conclude that Sp = Sq .
+Hence, in particular, if we move the vertex j to the set Vp of the partition, the resulting
+partition, now with i and j grouped in the set Vp , is a global optimal solution. Since the vertex j is arbitrary, any other vertex associated with the score (R, F , M ) can be grouped in the
+set Vp and, at the end of this process, we obtain a global optimal solution with all the vertices
+associated with the score (R, F , M ) grouped in the same set.
+Considering now the resulting global optimal solution and observing that the score
+(R, F , M ) is also arbitrary, we can repeat this process with any other (R, F, M)-score for
+which we have associated vertices lying in different sets of the partition. This way, at the
+end of this process, we finally obtain a global optimal solution such that, for each fixed score
+(R, F, M), all the vertices associated with this score (R, F, M) are grouped in the same set,
+that is, we obtain a global optimal solution that is also a segmentation solution. 
+□
+Let us denote by f the objective function of the (BQO) problem when G is given as an
+input, while we denote by fR the objective function of the (BQO) problem when G′ is given
+as input. We have the following result.
+Theorem 2 Let x ∗ be the optimal solution to the (BQO) problem when G is given as input,
+∗
+and let xR
+be the optimal solution to the (BQO) problem when G ′ is given as input. Then,
+∗
+∗
+f (x ) = fR (xR
+).
+Proof From Theorem 1, we can assume that x∗ is a segmentation solution. It means that
+all vertices with the same (R, F, M)-scores are in the same group. Applying Procedure 1 to
+graph G with the corresponding solution x∗ , we obtain a feasible solution x̂R to the reduced
+problem, and by its construction, it is easy to see that f (x∗ ) = fR (x̂R ).
+Let x0 be a feasible solution to the original problem obtained from x∗R by Procedure 2.
+By its construction, we have fR (x∗R ) = f (x0 ). Accounting for the maximality of f (x∗ ), we
+have f (x∗ ) ≥ f (x0 ) and hence
+fR (x̂R ) = f (x∗ ) ≥ f (x0 ) = fR (x∗R ).
+
+By the maximality of fR (x∗R ), we then have
+fR (x∗R ) = fR (x̂R ),
+
+from which we conclude that f (x∗ ) = f (x0 ) = fR (x∗R ). 
+
+□
+
+Remark 1 Note that, by the proof of Theorem 2, we also conclude that applying Procedure
+2 to an optimal solution x∗R of the reduced problem yields an optimal solution x0 to the
+original problem.
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+3.3 Summary of our methodology
+We summarize the methodology in seven steps. Consider a dataset composed of n customers. We propose a method for customer segmentation using the RFM analysis and clustering by solving the max-k-cut problem related to the dataset. In the sequel, we describe our
+graph-based methodology.
+● Split the data (recency, frequency, and monetary value), sorting them in ascending order
+into T equally spaced intervals, and assign an integer in the range 1 to T to each variable
+Ri , Fi , Mi for each customer i ∈ {1, . . . , n}.
+● Determine the possible values of k (the number of clusters in which the customers will
+be segmented) according to the appropriate criteria, depending on the particular application.
+● Build the corresponding weighted graph G on n vertices with the customer dataset. Each
+customer i is a vertex of G, and two customers i and j are connected by an edge with
+weight wij = |Ri − Rj | + |Fi − Fj | + |Mi − Mj |.
+● Reduce G to the graph G′ by merging vertices with the same (R, F, M)-score and updating the edge weights as previously described in Procedure 1. The graph G′ has n′ ≤ n
+vertices.
+● For each one of the selected values of k, solve the corresponding max-k-cut problem
+′
+through the formulation (BQO), given G′ with n′ vertices as an input. Let x∗ ∈ Rn ×k
+be the optimal solution found for the reduced graph.
+● Obtain a segmentation solution x∗ ∈ Rn×k to the problem (BQO) with graph G given
+as input using Procedure 2.
+● Choose the best value of k through some measure of clustering performance (Karanikola
+et al. 2021) or other criteria that may be more suitable for a given practical application.
+
+4 Results and discussion
+Our computational experiments were conducted on an Intel Core i7 processor operating at
+3.4 GHz, equipped with 64 GB of RAM and running the Ubuntu Linux operating system.
+The algorithms were implemented in Python 3.12.2, and Gurobi Optimizer version 11.0.2
+was employed to solve formulation (BQO) under its default parameter settings.
+This section is organized into two subsections. Section 4.1 evaluates the proposed methodology on three synthetic datasets. For a fixed T in the set {3, 5, 7}, the R, F, and M values
+for each customer were randomly generated from a discrete uniform distribution over the
+interval [1, T]. To assess the effectiveness and stability of the method, instances comprising
+100, 1000, and 10000 customers were considered. We compare our results with the Gaussian Mixture Models (GMM) and K-means clustering available in the scikit-learn Python
+library. Section 4.2 investigates the performance of the methodology on a well-established
+benchmark dataset from the UCI Machine Learning Repository, which has been widely
+adopted in the literature for customer segmentation studies. We compare our results with
+three other methods: K-means and Hierarchical approaches as presented in Rungruang et al.
+Rungruang et al. (2024), and GMM clustering method. Additionally, we present a businessoriented analysis of the results achieved in Section 4.2.1 using our proposed method.
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+4.1 Synthetic datasets
+To evaluate the robustness and sensitivity of the max-k-cut method for customer clustering,
+three synthetic datasets were generated, each representing (R, F, M)-scores of customers.
+Dataset of sizes 100, 1000, and 10000 customers were considered. For each dataset size,
+(R, F, M)-scores were generated from a discrete uniform distribution over the interval [1, T],
+where T = 3, 5 and 7. This experimental design enables a systematic assessment of the
+method’s performance under different data scales and score ranges. Additionally, for comparison purposes with the proposed graph-based approach, two other clustering methods —
+GMM and K-means clustering — were applied to the same datasets, varying the number of
+clusters from 2 to 10, and then we compute the silhouette index for each grouping.
+The silhouette index (Rousseeuw 1987) is a metric used to assess the quality of a clustering by considering both the internal cohesion of the clusters and the separation between
+them. For each vertex, it calculates how close this vertex is to others in the same cluster
+compared to vertices in neighboring clusters, giving us the individual silhouette index of
+each vertex. The average of these individual values yields the overall silhouette score. The
+closer this average value is to 1, the better the clustering, indicating that the data is well
+grouped and well separated. Values close to 0 suggest overlapping clusters, and negative
+values indicate poor clustering.
+For datasets with 100, 1000, and 10000 observations, Figs. 2, 3 and 4 present the silhouette index for three clustering methods and different numbers of clusters, corresponding to
+(R, F, M)-scores with T = 3, T = 5 and T = 7, respectively. It can be observed that, when
+analyzing the silhouette index across all nine datasets created, the GMM method exhibited inferior performance compared to the other methods, showing unstable behavior with
+respect to the number of clusters. On the other hand, overall, the max-k-cut method demon-
+
+0.40
+0.35
+0.30
+0.25
+
+0.30
+
+0.35
+
+Silhouette index
+
+0.40
+
+0.45
+
+Max−k−cut
+K−means
+GMM
+
+0.20
+
+0.25
+
+Silhouette index
+
+Size = 1000
+0.45
+
+Size = 100
+Max−k−cut
+K−means
+GMM
+
+2
+
+4
+
+6
+
+8
+
+10
+
+2
+
+4
+
+6
+
+No. of cluster
+
+8
+
+10
+
+No. of cluster
+
+Size = 10000
+
+0.35
+0.30
+0.25
+
+Silhouette index
+
+0.40
+
+Max−k−cut
+K−means
+GMM
+
+2
+
+4
+
+6
+
+8
+
+10
+
+No. of cluster
+
+Fig. 2 Silhouette index values for the max-k-cut, K-means, and GMM methods on discrete uniform samples in the interval [1, 3] with sizes 100, 1000, and 10000, respectively
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+Size = 1000
+0.30
+0.25
+0.20
+
+Silhouette index
+2
+
+Max−k−cut
+K−means
+GMM
+
+0.10
+
+Max−k−cut
+K−means
+GMM
+
+0.15
+
+0.30
+0.25
+0.20
+
+Silhouette index
+
+0.35
+
+Size = 100
+
+4
+
+6
+
+8
+
+10
+
+2
+
+4
+
+6
+
+No. of cluster
+
+8
+
+10
+
+No. of cluster
+
+0.25
+0.20
+0.15
+0.10
+
+Silhouette index
+
+0.30
+
+Size = 10000
+
+0.05
+
+Max−k−cut
+K−means
+GMM
+2
+
+4
+
+6
+
+8
+
+10
+
+No. of cluster
+
+Fig. 3 Silhouette index values for the max-k-cut, K-means, and GMM methods on discrete uniform samples in the interval [1, 5] with sizes 100, 1000, and 10000, respectively
+Size = 1000
+
+2
+
+0.20
+0.10
+
+Silhouette index
+
+0.25
+0.20
+
+Max−k−cut
+K−means
+GMM
+
+0.00
+
+Max−k−cut
+K−means
+GMM
+
+0.15
+
+Silhouette index
+
+0.30
+
+0.30
+
+Size = 100
+
+4
+
+6
+
+8
+
+10
+
+2
+
+4
+
+6
+
+No. of cluster
+
+8
+
+10
+
+No. of cluster
+
+0.28
+0.26
+0.24
+0.22
+
+Silhouette index
+
+0.30
+
+Size = 10000
+Max−k−cut
+K−means
+GMM
+
+2
+
+4
+
+6
+
+8
+
+10
+
+No. of cluster
+
+Fig. 4 Silhouette index values for the max-k-cut, K-means, and GMM methods on discrete uniform samples in the interval [1, 7] with sizes 100, 1000, and 10000, respectively
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+strated competitive performance in comparison with the K-means method. A more detailed
+analysis reveals that, for T = 3 (Fig. 2), max-k-cut outperformed K-means in nearly all
+cases, regardless of dataset size. For T = 5 (Fig. 3), the best results alternated between maxk-cut and K-means. Finally, for T = 7 (Fig. 4), K-means showed a slight advantage over
+max-k-cut. These findings indicate that, for different instance sizes, the max-k-cut method
+achieved satisfactory results comparable to those of the well-established K-means method.
+Moreover, as the parameter T (i.e., the range of the (R, F, M)-scores) varied, the results of
+the max-k-cut method remained stable, suggesting that the method is robust with respect to
+this parameter.
+
+4.2 A real-world dataset
+In order to evaluate the usability of the proposed method, we used the Online Retail II dataset from the UCI Machine Learning Repository. This widely recognised dataset, employed
+in several studies, including (Rahim et al. 2021) and (Rungruang et al. 2024), encompasses
+transactions from a non-store online retail operation based in the UK, specializing in the
+sale of unique all-occasion giftware, primarily for wholesalers. The period considered spans
+from December 1, 2009 to December 9, 2011, totaling 1,067,371 transactions and comprising eight variables, including Customer ID, InvoiceDate, Quantity, and Price.
+Before applying our method, we preprocessed the data. During the preprocessing phase,
+we removed entries with missing Customer IDs, negative values in Quantity and/or Price, as
+well as duplicate records. As a result, the dataset was reduced to 79,104 transactions made
+by 5878 unique customers. Extreme values were intentionally retained, as the RFM methodology seeks to capture behavioral variability across the customer base, including atypical
+or extreme purchasing patterns. Such observations may represent strategically important
+customers, and their removal could lead to the loss of valuable business insights. Table 1
+presents descriptive statistics of the recency, frequency and monetary variables for all 5878
+customers after processing the data.
+After data preprocessing, the RFM analysis was performed for each of the 5878 customers. For each customer i, the frequency (Fi ) is defined as the number of transactions made by
+i in the considered period; the monetary value (Mi ) is calculated as the sum of the monetary
+transaction values (quantity x price) for i; and the recency (Ri ) represents the elapsed time
+(in days) between the date of the last purchase made by i and the last purchase in the entire
+dataset. Recency was transformed so that a lower value indicates a better outcome, aligning
+it with the other variables (frequency and monetary value).
+Thus, by adopting T = 5, each customer is assigned to an (R, F, M)-score, with the
+three variables (R, F, and M) receiving a score from 1 to 5 based on the quintiles (division
+of the dataset into five equal parts) of each variable. A score of 1 represents the worst case,
+while 5 represents the best case. The choice of five scores to RFM methodology proved to
+be appropriate, as using a smaller number of classes could result in the aggregation of customers with distinct profiles, whereas adopting a larger number of classes would increase
+fragmentation, making interpretation and practical application more difficult. Furthermore,
+Table 1 Minimum, mean and
+maximum values of recency,
+frequency and monetary value
+for all 5878 customers
+
+13
+
+Value
+Min
+Mean
+Max
+
+Recency
+0.00
+200.87
+738.00
+
+Frequency
+1.00
+6.30
+398.00
+
+Monetary
+2.95
+2, 965.56
+580 987.04
+
+RFM model customer segmentation from a graph theory perspective
+Table 2 Clustering results for the
+instance with 40 customers for
+k = 2, 3 and 4, when graphs G
+(40 vertices and 764 edges) and
+G′ (28 vertices and 378 edges)
+are given as input to the formulation (BQO)
+
+Number of groups (k)
+2
+3
+4
+
+tG (s)
+0.90
+88.51
+314.42
+
+tG′ (s)
+0.20
+3.15
+61.71
+
+Objective function
+2428
+2864
+3052
+
+Table 3 Clustering results for the
+instance with 45 customers for
+k = 2, 3, and 4, when graphs G
+(45 vertices and 972 edges) and
+G′ (32 vertices and 496 edges)
+are given as input to the formulation (BQO)
+
+Number of groups (k)
+2
+3
+4
+
+tG (s)
+0.04
+142.10
+1559.78
+
+tG′ (s)
+0.18
+6.27
+59.58
+
+Objective function
+3132
+3702
+3932
+
+Table 4 Clustering results for the
+instance with 50 customers for
+k = 2, 3, and 4, when graphs G
+(50 vertices and 1, 201 edges)
+and G′ (33 vertices and 528
+edges) are given as input to the
+formulation (BQO)
+
+Number of groups (k)
+2
+3
+4
+
+tG (s)
+0.11
+510.55
+5245.87
+
+tG′ (s)
+0.22
+3.12
+70.83
+
+Objective function
+3930
+4646
+4948
+
+other studies using the same dataset adopt five scores for the RFM methodology (Akande; H
+et al. 2024; Christy et al. 2021; Majilya; G. Maji et al. 2024; Rungruang et al. 2024).
+It is worth noting that, when using scores in the RFM methodology, it is not necessary to
+standardize the variables, as all values range from 1 to T and the distances are not affected
+by differences in the magnitude of the variables.
+To illustrate the difference between solving the formulation (BQO) for the original problem, in which the graph G is given as input, and applying our method, in which the reduced
+graph G′ is given as input, we first solved three small instances of the formulation (BQO)
+to their optimality using both the original and the reduced problems. The instances contain,
+respectively, the first 40, 45, and 50 customers of the dataset resulting from the aforementioned preprocessing step. The results for each one of these instances are displayed in Tables
+2, 3, and 4, where the columns are: the number k of groups, for k = 2, 3, and 4; the average
+execution time (in seconds), considering 10 executions of the formulation (BQO) when G is
+given as input (tG ) and when G′ is given as input (tG′ ), respectively; and the optimal objective function value, which was the same for both the original and the reduced problems, as
+it has been previously proved in Theorem 2.
+Remark 2 The optimal objective function value of the formulation (BQO) increases as the
+number k of clusters increases, but it does not have any implications for the clustering quality. This happens because a partition of the vertices into k distinct groups is a particular case
+of a partition of the vertices into k + 1 groups, one of them having no vertices assigned to
+it. Hence, when we look for the optimal objective function value with more clusters available, more vertices can be assigned to distinct clusters and thus more edge weights can be
+considered in the objective function of the formulation (BQO), increasing its optimal value,
+when compared to the optimal value when a smaller value of k is considered.
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+From these tests with the small instances, we can see that even for small problems,
+involving datasets with few customers, our strategy may present a great advantage when
+compared to solving the formulation (BQO) with the original graph G. Indeed, for values
+of k greater than 2, our method needed a much lower computer processing time to solve
+the formulation (BQO). Moreover, our approach guarantees that the solution found is a
+segmentation solution.
+In Table 5, the results considering all 5878 customers are presented. In this case, the
+graph G, for the original problem, has 5878 vertices and 16, 874, 125 edges, and it was
+not possible to run the formulation (BQO) for any value of k. As expected for these large
+problems, the formulation (BQO) can be solved only through our approach, using the graph
+G′ , which corresponds to the reduced problem and has 114 vertices and 6441 edges. The
+execution time limit was set to two hours, or 7200 seconds.
+The first column of Table 5 presents the number k of groups ranging from 2 to 10. In the
+second column, we have the execution time (in seconds) of the formulation (BQO) when G′
+is given as input. The execution time of 7200 s in the table indicates that Gurobi optimization reached the imposed time limit and the best feasible solution obtained up to this time
+was chosen, which is not necessarily the optimal solution. The objective function values
+found are listed in the third column of Table 5. Finally, the overall silhouette index for each
+value of k is presented in the fourth column.
+We compare the results obtained by applying the proposed methodology with those
+reported in Rungruang et al. (2024). In Rungruang et al. (2024), the authors used the same
+dataset and applied a new clustering algorithm by combining the RFM model with hierarchical approach using Formal Concept Analysis (FCA). The silhouette index values obtained
+by the K-means and Hierarchical FCA methods, as reported in Rungruang et al. (2024),
+and by our method are presented in Fig. 5 and Table 6. Additionally, we applied the GMM
+clustering to enrich the comparison. The silhouette index values obtained by our method are
+better compared to the other methods in 94% of the tests, demonstrating the better performance of our clustering approach.
+As can be observed from the results, when the proposed method is used to segment the
+real-world dataset, the highest silhouette index values are obtained when customers are
+segmented into 2 and 4 clusters, respectively, indicating that k = 2 and k = 4 yield the
+most effective clusterings. Although the highest silhouette index is reached for k = 2, as
+we mentioned at the end of Sect. 3, additional criteria may be considered when evaluating
+clustering quality and selecting the number k of clusters. For instance, in Rungruang et al.
+Table 5 Clustering results for the instance with 5878 customers for k = 2 to 10, when graph G′ (114 vertices
+and 6441 edges) is given as input to the formulation (BQO)
+Time (s)
+Objective function
+Silhouette index
+Number of groups (k)
+56, 957, 982
+2
+73.74
+0.4569
+68, 685, 769
+3
+0.3545
+7200
+73, 706, 438
+4
+0.3980
+7200
+76, 353, 219
+5
+0.3542
+7200
+77, 803, 712
+6
+0.2900
+7200
+78, 790, 442
+7
+0.3119
+7200
+79, 654, 918
+8
+0.3224
+7200
+80, 190, 479
+9
+0.3374
+7200
+80, 646, 842
+10
+0.3577
+7200
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+0.35
+0.30
+0.25
+0.15
+
+0.20
+
+Silhouette index
+
+0.40
+
+0.45
+
+Max−k−cut
+K−means
+Hierarchical
+GMM
+
+2
+
+4
+
+6
+
+8
+
+10
+
+No. of cluster
+
+Fig. 5 Silhouette index of K-means and Hierarchical clustering by Rungruang et al. (2024), max-k-cut and
+GMM clustering at different cluster numbers
+
+Table 6 Silhouette index for different values of k, for max-k-cut,
+K-means and Hierarchical (used
+in Rungruang et al. (2024)), and
+GMM clustering method
+
+Number of groups (k)
+2
+3
+4
+5
+6
+7
+8
+9
+10
+
+Max-k-cut
+0.46
+0.35
+0.40
+0.35
+0.29
+0.31
+0.32
+0.34
+0.36
+
+K-means
+0.40
+0.31
+0.33
+0.31
+0.30
+0.29
+0.29
+0.29
+0.27
+
+Hierarchical
+0.32
+0.25
+0.28
+0.26
+0.23
+0.23
+0.23
+0.21
+0.21
+
+GMM
+0.40
+0.37
+0.36
+0.24
+0.16
+0.14
+0.18
+0.23
+0.22
+
+(2024), the number of groups was determined based on whether the resulting clusters were
+meaningful and valuable from a business perspective.
+
+4.2.1 Business analysis
+The computational results obtained from our method indicate that segmenting the customers in the Online Retail II dataset into either two or four distinct groups yields the best
+performance in terms of the silhouette index. Here, we describe some statistics obtained for
+each group in the cases of two and four groups, and evaluate which configuration is more
+appropriate from a managerial and business intelligence perspective.
+Table 7 presents a descriptive statistics for the RFM variables when the dataset is divided
+into two clusters.
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+From Table 7, we see that customers in Cluster 1 take about 325 days, on average, to
+make a new purchase, have low buying frequency (less than two purchases on average), and
+have low monetary value spent over the considered period. Therefore, they are currently
+customers who contribute a low income to the company.
+On the other hand, on average, customers in Cluster 2, when compared to customers
+in Cluster 1, take considerably less time to make a new purchase, have higher buying frequency, and greater monetary value spent over the considered period. Therefore, they are
+currently a group of more loyal customers and generate higher income for the company.
+However, even after identifying two very distinct groups of customers, some questions
+about the customers’ behavior still remain. For instance, considering Cluster 1, we are not
+able to differentiate customers who could be stimulated to make more frequent purchases
+from those who have possibly been lost to competitors. In Cluster 2, we are not able to
+distinguish the most loyal and profitable customers from those who could be the target of
+marketing strategies to increase their buying frequency and the amount of money spent at
+the company.
+We understand that these questions are better answered when we divide the customers
+into four distinct groups. Indeed, in this case, we are able to identify more customer segments, which helps us analyze their behavior and relationship with the company in more
+detail. Thus, dividing customers into four distinct groups can provide more meaningful and
+actionable insights for enterprise applications.
+The results for k = 4, which yielded the second highest silhouette index, are shown in
+Table 8.
+Using the methodology proposed in Cheng and Chen (2009) to classify customer loyalty,
+the Table 9 is obtained. This methodology calculates the distance between the center of the
+cluster ((R, F, M)-scores) and the origin (0, 0, 0), and ranks the groups from the greatest to
+the least distance.
+From Tables 8 and 9, we note that, in Cluster 1 (classified as Low loyalty), we have
+customers who have practically abandoned the company, because they have very high
+recency, very low frequency (on average one purchase), and low value spent. This group
+could be the target of campaigns to encourage their return, so the company can reactivate
+these customers.
+In Cluster 2 (classified as Medium loyalty), customers are slightly more frequent and
+spend more, but their last purchase ocurred some time ago. This group could be the target of
+retention campaigns or loyalty programs.
+Cluster 3 (classified as Very high loyalty), on the other hand, is the company’s most
+valuable customer group. These customers make purchases almost every month, with high
+
+Table 7 Minimum, mean and
+maximum recency, frequency
+and monetary values for two
+clusters
+
+Cluster
+
+Value Recency
+
+Frequency
+
+Monetary
+
+1
+
+Min
+Mean
+Max
+Min
+Mean
+Max
+
+1.00
+1.66
+8.00
+1.00
+10.78
+398.00
+
+2.95
+472.10
+13, 916.34
+30.95
+2980
+5390.40
+580, 987.04
+
+2
+
+13
+
+0.00
+325.22
+738.00
+0.00
+79.93
+691.00
+
+Number
+of customers
+2898
+
+RFM model customer segmentation from a graph theory perspective
+Table 8 Minimum, mean and
+maximum recency, frequency
+and monetary values for four
+clusters
+
+Cluster
+
+Value Recency
+
+Frequency
+
+Monetary
+
+1
+
+Min
+Mean
+Max
+Min
+Mean
+Max
+Min
+Mean
+Max
+Min
+Mean
+Max
+
+1.00
+1.19
+8.00
+1.00
+4.05
+17.00
+3.00
+16.13
+398.00
+1.00
+2.66
+15.00
+
+2.95
+283.07
+2803.20
+86.15
+1403
+1493.49
+44, 534.30
+808.62
+1612
+8575.24
+580, 987.04
+20.80
+1259
+841.01
+168.472.50
+
+2
+
+3
+
+4
+
+58.00
+417.27
+738.00
+58.00
+282.17
+738.00
+0.00
+39.66
+576.00
+0.00
+40.95
+186.00
+
+Number
+of customers
+1604
+
+Table 9 Class of customer loyalty according methodology proposed by Cheng and Chen (2009)
+Cluster Average R-score Average F-score Average M-score Distance Rank Customer loyalty
+1
+1.6097
+1.4233
+1.4501
+2.5923
+Low
+4◦
+2
+2.1140
+3.2894
+3.3485
+5.1480
+Medium
+3◦
+3
+4.2500
+4.6917
+4.6687
+7.8658
+Very high
+1◦
+4
+4.1557
+2.5179
+2.4472
+5.4404
+High
+2◦
+
+frequency and high value spent on transactions. Campaigns can target this group to maintain
+and eventually improve this relationship with the company.
+Finally, in Cluster 4 (classified as High loyalty), customers have low recency, indicating
+that they have bought recently, but with low frequency and low value spent. The company
+can develop marketing strategies aimed at this group so that they buy more frequently and
+increase the amount spent.
+In Fig. 6, scatterplots between Recency and Monetary, and Frequency and
+Monetary, for each grouping are presented. For better visualization, the points
+(R = 1, F = 151, M = 528.602.5) and (R = 0, F = 145, M = 580.987) from Cluster 3
+and (R = 0, F = 2, M = 168.472.5) from Cluster 4 were removed from the figures. All
+clusters present a higher concentration of customers with low recency and low frequency.
+However, there is an increase in the dispersion of recency and frequency in Clusters 3 and 4,
+indicating that these groups have more varied loyalty and engagement profiles, confirming
+that they are the company’s two most loyal customer groups, respectively.
+Figure 7 illustrates the total monetary value and frequency for each cluster by month,
+clearly highlighting the superiority of Cluster 3. While Cluster 4 initially appears to underperform compared to Clusters 1 and 2, Tables 8 and 9 indicate that this group has a smaller
+average recency. Notably, Fig. 7 shows an increase in purchases by Cluster 4 customers
+towards the end of the analyzed period, starting in August 2011. Additionally, Fig. 7 emphasizes a notable increase in sales during the holiday season, reflecting the store’s gift-oriented
+nature.
+Therefore, by considering clustering quality metrics and the significant business implications, a company can choose the ideal number k of clusters. Hence, by applying an effective
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+1500
+
+2000
+
+2500
+
+0
+
+1000
+
+1500
+
+2000
+
+2500
+
+30000
+
+40000
+
+Cluster 2
+
+Cluster 2
+
+30000
+
+5
+
+Frequency
+20000
+
+10 15
+
+Monetary
+
+40000
+
+0
+
+10000
+
+20000
+
+Monetary
+
+Monetary
+
+Cluster 3
+
+Cluster 3
+
+200
+0
+
+0
+
+200
+
+Frequency
+
+500
+
+400
+
+10000
+
+500
+
+Monetary
+
+400
+
+150000
+
+250000
+
+0
+
+50000
+
+150000
+
+250000
+
+Monetary
+
+Monetary
+
+Cluster 4
+
+Cluster 4
+Frequency
+
+2
+
+0 50
+
+10
+
+50000
+
+150
+
+0
+
+6
+
+Recency
+
+5
+1
+
+1000
+
+100
+0
+
+Recency
+
+3
+
+Frequency
+
+400
+
+Recency
+
+100
+
+500
+
+700
+
+0
+
+Recency
+
+7
+
+Cluster 1
+
+700
+
+Cluster 1
+
+0
+
+1000
+
+2000
+
+3000
+
+4000
+
+5000
+
+0
+
+1000
+
+Monetary
+
+2000
+
+3000
+
+4000
+
+5000
+
+Monetary
+
+Fig. 6 Recency × Monetary, and Frequency × Monetary for each cluster
+
+technique to segment customers, such as the one presented in this research, a company
+leverage its business by no longer treating all customers equally, but instead considering
+them according to their purchasing profiles.
+
+5 Conclusion
+This article proposed a graph-based clustering method to solve customer segmentation
+problems. Our approach combines the RFM analysis with the max-k-cut problem. Each
+customer is represented by a vertex of a graph G, and the edge weights are the Manhattan
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+
+30000
+
+40000
+
+Cluster 1
+Cluster 2
+Cluster 3
+Cluster 4
+
+0
+
+0e+00
+
+10000
+
+20000
+
+Total Monthly Frequency
+
+6e+05
+4e+05
+2e+05
+
+Total Monthly Monetary
+
+8e+05
+
+Cluster 1
+Cluster 2
+Cluster 3
+Cluster 4
+
+Dec/2009
+
+Apr/2010
+
+Aug/2010
+
+Dec/2010
+
+Apr/2011
+
+Aug/2011
+
+Dec/2009
+
+Month
+
+Apr/2010
+
+Aug/2010
+
+Dec/2010
+
+Apr/2011
+
+Aug/2011
+
+Month
+
+Fig. 7 Total monthly monetary and frequency for each cluster
+
+distances between the vectors corresponding to the customers’ (R, F, M)-scores. To segment
+the customers into k disjoint groups, we must solve the corresponding formulation (BQO)
+of the max-k-cut problem.
+However, customer datasets may contain thousands of customers, and solving the formulation (BQO) when G is given as input may be computationally infeasible. In fact, in our
+computational experiments on a real-world dataset, in Section 4.2, the graph G had 5878
+vertices and 16, 874, 125 edges, and it was not possible to run the corresponding max-k-cut
+problem on our computer, for any value of k.
+This is why, in our method, we introduced the reduced graph G′ of G, which has a considerably smaller number of vertices and edges, independent of the number of customers.
+We then analyzed the auxiliary problem obtained when G′ is given as input in formulation
+(BQO), proving, in Theorem 2, that, from any optimal solution to this problem, we can easily retrieve a segmentation solution to the original problem, when G is given as input, via
+Procedure 2.
+To validate the proposed methodology, we applied the max-k-cut method to synthetic
+datasets of different sizes and values of the parameter T (the range of the RFM scores),
+which did not appear to be affected by the T value and proved to be competitive with the
+well-known K-means method. Next, we applied it to the Online Retail II dataset from the
+UCI Machine Learning Repository. After preprocessing the data, we obtained a dataset containing the (R, F, M)-scores of 5878 customers. The initial computational experiments with
+small instances, using only the first 40, 45, and 50 customers of this dataset, already suggested the advantage of using our method instead of solving formulation (BQO) with the
+original graph given as input. Indeed, besides our method provides a segmentation solution
+for each problem, for k > 2, the computer processing time is significantly smaller when we
+use the reduced graph.
+The full problem, with all 5878 customers, in its turn, was solvable only through our
+method, passing the reduced graph G′ as input to the formulation (BQO). We solved the
+associated max-k-cut problem for k = 2 to 10 and calculated the silhouette index of the
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+
+resulting clusterings of the 5878 customers, identifying that the highest silhouette indexes
+were obtained for k = 2 and 4, in this order.
+Nevertheless, to choose the number k of clusters, we argue that other criteria, in addition to cluster quality metrics, should be considered, depending on the practical application
+we are working with. In fact, in Section 4.2.1, we analyzed the resulting clustering of the
+customers for k = 2 and k = 4 through the minimum, mean and maximum values of the
+variables recency, frequency and monetary value of each cluster.
+The conclusion was that dividing the customers into four groups enabled us to identify
+other segments of interest that were not observable in the division into two groups and could
+be targeted by more personalized and effective marketing strategies. Therefore, in our case,
+despite k = 2 yielding the highest silhouette index, k = 4 should be preferred because the
+resulting clustering is more meaningful and valuable from the business perspective.
+We highlight that the methodology presented in this article can be applied in a more general scenario, that is, in a scenario where more than three variables are available, not only
+the RFM scores. Examples of these more general scenarios are the models for customer
+segmentation with scales for the RFM variables adopting different values for T Doğan et al.
+(2018), Panuš et al. (2016), Ramkumar et al. (2025) or which incorporate more variables to
+the RFM model, such as the LRFM, RFMTC, RFMD and RFMT models (Chang and Tsay
+2004; Noori 2015; Yeh et al. 2009; Zhou et al. 2021). In general, suppose that one wishes
+to classify objects in a system consisting of q variables, say V ar1 , V ar2 , , V arq , instead
+of only R, F and M. For a fixed T, each variable V ari may assume values from 1 to T. The
+same graph theory approach can be used in this setting, and using the Procedure 1 of our
+method on this dataset would generate a reduce graph with at most T q vertices. It is clear
+that for big values of T and q, obtaining the optimal solution to the corresponding maximum k-cut problem can be hard, from the computational point of view, even after applying
+our reduction technique. Still, in these situations, heuristic and/or metaheuristic methods
+can be applied to obtain good quality solutions to the customer segmentation problem in a
+acceptable computational time. However, note that the proposed mathematical approach is
+the same in both situations, which makes the developed method very useful even in different situations. Future works could focus on using our method in practical applications that
+employ these more general settings.
+Acknowledgements The first author, André Luiz Corrêa Vianna Filho, gratefully acknowledges the financial
+support provided by PRAPG/CAPES and Federal University of Paraná during the period 2024–2025. The
+research of Leonardo de Lima is partially supported by National Council for Scientific and Technological
+Development (CNPq) under grants 305988/2025-5 and 403963/2021-4. The third author was financed in
+part by the Coordenação de Aperfeiçoamento de Pessoal de Nível Superior—Brasil (Capes)—Finance Code
+001. The Article Processing Fee for the publication of this research was funded by the Coordenação de
+Aperfeiçoamento de Pessoal de Nível Superior —Brasil (CAPES) (ROR identifier: 00x0ma614). For open
+access purposes, the authors have assigned the Creative Commons CC BY licence to any accepted version
+of the article.
+Author contributions All authors contributed to the study conception and design, read and approved the final
+manuscript.
+Funding The Article Processing Charge (APC) for the publication of this research was funded by the Coordenação de Aperfeiçoamento de Pessoal de Nível Superior - Brasil (CAPES) (ROR identifier: 00x0ma614).
+
+13
+
+RFM model customer segmentation from a graph theory perspective
+Data availability The synthetic datasets, which we use in our computational experiments, are available at
+https://docs.ufpr.br/~leonardo.delima/RFMsynthetic/, and the Online Retail II dataset from the UCI Machine
+Learning Repository is available at https:​​​//archi​ve.​ics​.uc​i.edu/d​ata​set​/502/online+retail+ii.
+
+Declarations
+Conflict of interest The authors declare no conflict of interest.
+Open Access   This article is licensed under a Creative Commons Attribution 4.0 International License,
+which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long as
+you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons
+licence, and indicate if changes were made. The images or other third party material in this article are
+included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the material.
+If material is not included in the article’s Creative Commons licence and your intended use is not permitted
+by statutory regulation or exceeds the permitted use, you will need to obtain permission directly from the
+copyright holder. To view a copy of this licence, visit http://creativecommons.org/licenses/by/4.0/.
+
+References
+Akande, O.N., Akande, H.B., Asani, E.O., Dautare, B.T.: Customer segmentation through RFM analysis and
+K -means clustering: leveraging data-driven insights for effective marketing strategy. In: 2024 International Conference on Science, Engineering and Business for Driving Sustainable Development Goals
+(SEB4SDG), pp. 1–8 (2024)
+Ambrosius, M., Grimm, V., Kleinert, T., Liers, F., Schmidt, M., Zöttl, G.: Endogenous price zones and investment incentives in electricity markets: an application of multilevel optimization with graph partitioning.
+Energy Econ. 92, 104879 (2020)
+Carlson, R.C., Nemhauser, G.L.: Scheduling to minimize interaction cost. Oper. Res. 14(1), 52–58 (1966)
+Carvajal, R., Constantino, M., Goycoolea, M., Vielma, J.P., Weintraub, A.: Imposing connectivity constraints
+in forest planning models. Oper. Res. 61(4), 824–836 (2013)
+Chang, H.H., Tsay, S.F.: Integrating of SOM and K-mean in data mining clustering: an empirical study of
+CRM and profitability evaluation. J. Inf. Manag. 11(4), 161–203 (2004)
+Cheng, C.-H., Chen, Y.-S.: Classifying the segmentation of customer value via RFM model and RS theory.
+Expert Syst. Appl. 36(3), 4176–4184 (2009)
+Chen, D., Sain, S.L., Guo, K.: Data mining for the online retail industry: a case study of RFM model-based
+customer segmentation using data mining. J. Database Mark. Cust. Strateg. Manag. 19, 197–208 (2012)
+Christy, A.J., Umamakeswari, A., Priyatharsini, L., Neyaa, A.: RFM ranking—an effective approach to customer segmentation. J. King Saud Univ. Comput. Inf. Sci. 33(10), 1251–1257 (2021)
+Doğan, O., Ayçin, E., Bulut, Z.: Customer segmentation by using RFM model and clustering methods: a case
+study in retail industry. Int. J. Contemp. Econ. Adm. Sci. Sciences 8, 1–19 (2018)
+Fakhimi, R., Validi, H., Hicks, I.V., Terlaky, T., Zuluaga, L.F.: On relaxations of the max k-cut problem formulations. Oper. Res. Lett. 51(5), 521–527 (2023)
+Gaur, D.R., Krishnamurti, R., Kohli, R.: The capacitated max k-cut problem. Math. Program. 115, 65–72
+(2008)
+Healey, P., Jozefowiez, N., Laroche, P., Marchetti, F., Martin, S., Róka, Z.: A branch-and-cut algorithm for
+the connected max-k-cut problem. Eur. J. Oper. Res. 312(1), 117–124 (2024)
+Hojny, C., Joormann, I., Lüthen, H., Schmidt, M.: Mixed-integer programming techniques for the connected
+max-k-cut problem. Math. Program. Comput. 13(1), 75–132 (2021)
+Hughes, A.M.: Strategic Database Marketing. Probus Publishing Company, Chicago (1994)
+Karanikola, A., Liapis, C.M., Kotsiantis, S.: Investigating cluster validation metrics for optimal number of
+clusters determination. Intell. Decis. Technol. 15(4), 809–824 (2021)
+Ma, F., Hao, J.-K.: A multiple search operator heuristic for the max-k-cut problem. Ann. Oper. Res. 248,
+365–403 (2017)
+Majilya, M., Maji, G., Ghosh, P., Sen, S.: Online retail customer segmentation using RFM quantiles and
+clustering technique. In: 2024 4th International Conference on Computer, Comunication, Control &
+Information Technology (C3IT), pp. 1–6 (2024)
+Noori, B.: An Analysis of Mobile Banking user behavior using customer segmentation. Int. J. Glob. Bus.
+8(2) 2015.
+
+13
+
+A. L. Corrêa Vianna Filho et al.
+Pai, PY., Lin, SW., Lu, WM.: Integration of association rule mining and RFM analysis with machine learning for e-commerce customer value segmentation: a sustainable retail perspective. Qual. Quant. (2025)
+Panuš, J., Jonášová, H., Kantorová, K., Doležalová, M., Horáčková, K.: Customer segmentation utilization
+for differentiated approach. In: 2016 International Conference on Information and Digital Technologies
+(IDT), pp. 227–233 (2016)
+Poland, J., Zeugmann, T.: Clustering pairwise distances with missing data: maximum cuts versus normalized
+cuts. In: Proceedings of the International Conference on Discovery Science, pp. 197–208 (2006)
+Rahim, M.A., Mushafiq, M., Khan, S., Arain, Z.A.: RFM-based repurchase behavior for customer classification and segmentation. J. Retail. Consum. Serv. 61, 102566 (2021)
+Ramkumar, G., Bhuvaneswari, J., Venugopal, S., Kumar, S., Ramasamy, C.K., Karthick, R.: Enhancing customer segmentation: RFM analysis and K-Means clustering implementation. In: Hybrid and Advanced
+Technologies, pp. 70–76 (2025)
+Rousseeuw, P.J.: Silhouettes: a graphical aid to the interpretation and validation of cluster analysis. J. Comput. Appl. Math. 20, 53–65 (1987)
+Rungruang, C., Riyapan, P., Intarasit, A., Chuarkham, K., Muangprathub, J.: RFM model customer segmentation based on hierarchical approach using FCA. Expert Syst. Appl. 237, 121449 (2024)
+van Dam, E.R., Sotirov, R.: New bounds for the max-k-cut and chromatic number of a graph. Linear Algebra
+Appl. 488, 216–234 (2016)
+Yeh, I.-C., Yang, K.-J., Ting, T.-M.: Knowledge discovery on RFM model using Bernoulli sequence. Expert
+Syst. Appl. 36(3), 5866–5871 (2009)
+Zhou, J., Wei, J., Xu, B.: Customer segmentation by web content mining. J. Retail. Consum. Serv. 61, 102588
+(2021)
+Zhu, W., Lin, G., Ali, M.M.: Max-k-cut by the discrete dynamic convexized method. INFORMS J. Comput.
+25(1), 27–40 (2013)
+Publisher's Note Springer Nature remains neutral with regard to jurisdictional claims in published maps and
+institutional affiliations.
+
+13
+
+

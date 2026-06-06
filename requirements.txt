@@ -1,0 +1,21 @@
+# Core data stack
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3      # silhouette_score
+scipy>=1.10
+pyarrow>=14.0          # parquet read/write for cached tables
+numba>=0.61            # JIT-compiles the from-scratch max-k-cut local search
+openpyxl>=3.1          # read the Online Retail II .xlsx
+matplotlib>=3.7        # figures (silhouette-vs-k, scatter, monthly trends)
+seaborn>=0.12
+
+# Optimization (baseline solver). Free academic license:
+#   https://www.gurobi.com/academia/academic-program-and-licenses/
+gurobipy>=11.0
+
+# Open-source fallback for the BQO (linearized) when Gurobi is unavailable.
+# Bundles the CBC solver; no license needed (slower than Gurobi).
+pulp>=2.7
+
+# Document generation (proposal .docx)
+python-docx>=1.1
