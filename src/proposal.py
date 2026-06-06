@@ -58,10 +58,10 @@ def build():
         ("Research title", "An LRFM Extension of Graph-Based Max-k-cut Customer "
                            "Segmentation for Targeted E-commerce Marketing"),
         ("Course", "DAP391m"),
-        ("Mentor", "[Enter mentor name]"),
-        ("Member 1", "[Full name 1 — Student ID]"),
-        ("Member 2", "[Full name 2 — Student ID]"),
-        ("Member 3", "[Full name 3 — Student ID]"),
+        ("Mentor", "Nguyễn Hoàng Linh"),
+        ("Member 1", "Nguyễn Công Minh — SE203724"),
+        ("Member 2", "Võ Đức Nhật — SE203702"),
+        ("Member 3", "Trần Nguyễn Minh Hải — SE203718"),
     ]
     for i, (k, v) in enumerate(rows):
         tbl.rows[i].cells[0].text = k
@@ -228,9 +228,9 @@ def build():
          "Cleaned dataset, retail.db, EDA report", "Research team"),
         ("3", "Week 3", "Feature engineering: LRFM scoring and justification",
          "customer_rfml table, LRFM justification", "Research team"),
-        ("4", "Week 3-4", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
+        ("4", "Week 4", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
          "Validated solver, test suite", "Research team"),
-        ("5", "Week 4", "Modelling: RFM vs LRFM; multi-method comparison",
+        ("5", "Week 4-5", "Modelling: RFM vs LRFM; multi-method comparison",
          "Silhouette results, loyalty segments", "Research team"),
         ("6", "Week 5", "SQL analytics, visualisation, report, proposal & audit log",
          "Figures, dashboards, final report", "Research team"),
