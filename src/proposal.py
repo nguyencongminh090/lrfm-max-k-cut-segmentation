@@ -230,7 +230,7 @@ def build():
          "customer_rfml table, LRFM justification", "Research team"),
         ("4", "Week 4", "License-free max-k-cut solver (Numba + Kernighan-Lin) + validation",
          "Validated solver, test suite", "Research team"),
-        ("5", "Week 4-5", "Modelling: RFM vs LRFM; multi-method comparison",
+        ("5", "Week 4", "Modelling: RFM vs LRFM; multi-method comparison",
          "Silhouette results, loyalty segments", "Research team"),
         ("6", "Week 5", "SQL analytics, visualisation, report, proposal & audit log",
          "Figures, dashboards, final report", "Research team"),
